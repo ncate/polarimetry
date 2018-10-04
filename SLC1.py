@@ -1,6 +1,7 @@
 from osgeo import gdal
 import numpy as np
 import polTable
+import math
 from snappy import ProductIO
 
 filePath = r"E:\School\Graduate_MS\0_Thesis\0_Data\Imagery\SLC_interfere3\tiffs\S1_2016_06_10_22_Orb_Stack_ifgFED8FEP1001OI5_deb.tif"
@@ -14,6 +15,23 @@ wavelengthCM = 5.5465763 # Wavelength in cm
 Baseline = 30.57856580367306 # rough horizontal offset based on the first pixel of 2 images
 Lwindow = 11 # For coherence and ground phase - Based on Touzi 1999
 Wvs = polTable.create_weight_vector_table()
+
+def get_complex_coherence(cohImg, phaseImg, width, height, windowSize=11):
+    row = round(windowSize/2)
+    col = round(windowSize/2)
+    complex_phase = np.zeros_like(cohImg, dtype=np.complex64)
+    for r in range(height-(windowSize+2)):
+        for c in range(width-(windowSize+2)):
+            try:
+                rlow, rhigh = row-math.ceil(windowSize/2), row+math.floor(windowSize/2)
+                clow, chigh = col-math.ceil(windowSize/2), col+math.floor(windowSize/2)
+                phaseMean = np.mean(phaseImg[rlow:rhigh, clow:chigh])
+                complex_phase[r,c] = cohImg[r,c] + (phaseMean * 1j)
+            except:
+                complex_phase[r, c] = cohImg[r, c] + (0j)
+            col += 1
+        row += 1
+    return complex_phase
 
 
 def flat_earth_removal(baseImg, h=orbitH, wavelength=wavelengthCM, B=Baseline):
