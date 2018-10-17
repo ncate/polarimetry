@@ -42,10 +42,12 @@ def flat_earth_removal(baseImg, h=orbitH, wavelength=wavelengthCM, B=Baseline):
         flatEarthPhase[:, y] = np.exp(i * ((4 * np.pi) / wavelength) * (r2 - r1))
     return flatEarthPhase
 
+
 def vert_wave_est(theta, B, h, wavelength):
     delta_theta = np.arctan(np.tan(theta) + (B/h)) - theta
     kz = (4 * np.pi * delta_theta) / (wavelength * np.sin(theta))
     return kz
+
 
 def ground_phase_est(gammaV, gammaS):
     A = (np.abs(gammaS)**2)-1
@@ -57,7 +59,8 @@ def ground_phase_est(gammaV, gammaS):
     phi = np.angle(gammaV - gammaS * (1 - LWs))
     return phi
 
-def veg_height_est(gammaV, phi, kz, epsilon):
+
+def veg_height_est(gammaV, phi, kz, epsilon=0.4):
     hv = ((np.angle(gammaV) - phi) / (kz)) + epsilon * ((2 * np.sinc(np.abs(gammaV))) / (kz)) # Make sure this in inverse sinc
     return hv
 

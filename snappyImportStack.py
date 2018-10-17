@@ -36,7 +36,23 @@ def get_bands_in_np (filepath):
 
     return img, bandnames
 
+def get_theta_in_np(filepath):
+    prod = ProductIO.readProduct(filepath)
+    # Get some Metadata
+    width = prod.getSceneRasterWidth()
+    height = prod.getSceneRasterHeight()
+    try:
+        tiepointInc = prod.getTiePointGrid('incident_angle')
 
+        theta = np.zeros((height, width), dtype=np.float32)
+        theta = tiepointInc.readPixels(0, 0, width, height, theta)
+        theta = np.asarray(theta)
+        theta.shape = (height, width)
+
+        return theta
+    except:
+        print("This thing doesn't seem to have an incident angle grid")
+    prod.dispose()
 
 
 def get_prod_metadata(first_image_location, second_image_location):
